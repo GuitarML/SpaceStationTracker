@@ -1,6 +1,6 @@
 # International Space Station Tracker
 
-ISS Tracker is an application that displays the current position of the International Space Station on a 2D world map. 
+SpaceStationTracker is an application that displays the current position of the International Space Station on a 2D world map. 
 It runs on a ESP32-2432S028R ILI9341 device with a 2.8" screen, commonly known as the CYD "Cheap Yellow Display", 
 which costs $20 or less. The code was written using Arduino IDE / ESP32 development environment in c++.
 
@@ -10,6 +10,24 @@ This code could be repurposed for other orbiting space objects.
 I used this project to learn programming for ESP32/Arduino/CYD.
 It includes topics such as graphics using LVGL, wifi connection, getting
 information from a restful API, parsing json data, and touchscreen interaction.
+
+### Using the SpaceStationTracker
+
+The SpaceStationTracker requires a local Wifi connection to retrieve location data
+for the International Space Station. The first time you load and run the app on the CYD, it will
+display a splash screen for how to connect. The ESP32 board will create a hotspot
+that you can then connect to from a phone or laptop. Choose your Wifi network and
+enter your credentials to connect the CYD to your Wifi. This is a safer method than
+hard coding Wifi info in the application, as with many esp32 DIY projects out there.
+
+Once the app is connected to Wifi, it will continue to display and track the
+International Space Station. The esp32 will remember the last Wifi connection
+when cycling power, and if it changes you will be prompted to re connect using the above method.
+
+The Latitude, Longitude, and UTC date time is displayed in real time, updating from 
+the Open Notify ISS Location Now API every 5 seconds (the recommended frequency).
+You can also use the touchscreen and click on the ISS icon to display a random
+fact about the ISS.
 
 ### Hardware Info
 
