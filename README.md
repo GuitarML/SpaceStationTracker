@@ -27,10 +27,25 @@ Once the app is connected to Wifi, it will continue to display and track the
 International Space Station. The esp32 will remember the last Wifi connection
 when cycling power, and if it changes you will be prompted to re connect using the above method.
 
+![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/splashscreen.jpg)
+The splashscreen will display on the CYD until it can connect to WiFi.
+
+![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/wifi1.jpg)
+On a phone or computer, connect to the temporary WiFi access point called "SpaceStationTracker".
+It should show the screen above. Click "Configure WiFi".
+ 
+![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/wifi2.jpg)
+Enter the WiFi network you wish to connect to (or select from the list) and enter your password. 
+This is used for the ESP32 board to connect to your local WiFi. After a successful connection,
+the SpaceStationTracker app will load and begin tracking the International Space Station.
+
 The Latitude, Longitude, and UTC date time is displayed in real time, updating from 
-the Open Notify ISS Location Now API every 5 seconds (the recommended frequency).
-You can also use the touchscreen and click on the ISS icon to display a random
+the Where The ISS At API.
+You can use the touchscreen and click on the ISS icon to display a random
 fact about the ISS.
+
+The screen brightness will dim automatically over a few minutes to save power, 
+and will go to full brightness again when the user interacts with the touchscreen.
 
 ### Hardware Info
 
@@ -50,15 +65,15 @@ Be aware of the differences in the printable models if you want to use the micro
 ### How to compile:
 
 1. Configure Arduino IDE 
-    a. for "esp32" board with a device type of "ESP32 Dev Module" and
-    b. set "Tools -> Partition Scheme" to "Huge App (3MB No OTA/1MB SPIFFS)"
+    a. For "esp32" board with a device type of "ESP32 Dev Module"
+    b. Set "Tools -> Partition Scheme" to "Huge App (3MB No OTA/1MB SPIFFS)"
 2. Install the libraries below in Arduino IDE
 3. You can copy the entire SpaceStationTracker repository into ~/Documents/Arduino/
     a. User_Setup.h file for TFT_eSPI needs to be placed (overwrite to) the TFT_eSPI folder in ~/Documents/Arduino/libraries
     b. lv_conf.h file for LVGL needs to be placed in ~/Documents/Arduino/libraries/lvgl/src
-4. Plug in your CYD over USB and compile and upload the SpaceStationTracker code. To reset the CYD to get ready for install, you may need to
-    hold the boot button, then press and relese the reset button, and then release the boot button. These are the small white buttons
-	located on the back of the CYD board. They are labeled "RST" and BOOT".
+4. Plug in your CYD over USB to your computer, connect in the Arduino IDE, and compile and upload the SpaceStationTracker code using the Arduino IDE. 
+   To reset the CYD to get ready for install, you may need to hold the BOOT button, then press and release the RESET button, 
+   and then release the BOOT button. These are the small white buttons located on the back of the CYD board. They are labeled "RST" and BOOT".
 
 ### Required Libraries:
 
@@ -77,6 +92,7 @@ The SpaceStationTracker.ino code is under the terms of the GPL 3.0 license.
 
 ### Acknowledgements
 
+- Thanks to [WhereTheISS.at](https://wheretheiss.at/w/developer) for the cool API! 
 - ISS icon was resized from the ISS icon found on the [NASA Website](https://science.nasa.gov/multimedia/spacecraft-icons/)
 - Background worldmap was generated using [Basemap](https://matplotlib.org/basemap/stable/) (NASA Bluemarble, Mercator Projection)
 - Much info was gathered from [Random Nerd Tutorials for CYD](https://randomnerdtutorials.com/cheap-yellow-display-esp32-2432s028r/)

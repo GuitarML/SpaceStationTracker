@@ -2,8 +2,8 @@
 International Space Station Tracker for ESP32 CYD (Cheap Yellow Display)
 
 Simple application that displays the current location of the ISS
-using data from Open Notify ISS Location Now API:
-http://open-notify.org/Open-Notify-API/ISS-Location-Now/
+using data from Where the ISS At API:
+https://api.wheretheiss.at/v1/satellites/25544
 
 The Mercator projection worldmap was generated using the 
 Python Basemap (an extension of matplotlib), and scaled 
@@ -38,6 +38,18 @@ https://github.com/Surrey-Homeware/Aura (Weather App used for example esp32 Wifi
 #include <RTClib.h>
 #include <esp32-hal-ledc.h>
 
+
+/////////////////////////////////////////
+/// User Preferences, edit as desired ///
+/////////////////////////////////////////
+#define POSITION_UPDATE_TIME 5000UL    // Every 5 seconds attempt to update the ISS position from the API
+#define FACT_FADE_UPDATE_TIME 58UL     // Every 58ms fade fact text by 1 from 255 to 0, about 15 seconds
+#define BRIGHTNESS_UPDATE_TIME 10000UL // Decrease screen brightness a little every 10 seconds
+#define MAX_TRACK_DOTS 200             // The maximum number of trailing track dots, set as desired.
+#define SCREEN_MINIMUM_BRIGHTNESS 30   // Edit this from 0 to 255 to set the minimum screen brightness (0 = off, 255=always on full)
+/////////////////////////////////////////
+
+
 // Define touchscreen pins, specific to this particular CYD hardware.
 #define XPT2046_IRQ 36   // T_IRQ
 #define XPT2046_MOSI 32  // T_DIN
@@ -51,9 +63,6 @@ https://github.com/Surrey-Homeware/Aura (Weather App used for example esp32 Wifi
 #define SCREEN_WIDTH 240
 #define SCREEN_HEIGHT 320
 #define DEFAULT_CAPTIVE_SSID "SpaceStationTracker"
-#define POSITION_UPDATE_TIME 5000UL  // 5 seconds
-#define FACT_FADE_UPDATE_TIME 58UL   // Every 58ms fade fact text by 1 from 255 to 0, about 15 seconds
-#define BRIGHTNESS_UPDATE_TIME 10000UL // Decrease brightness a little every 10 seconds
 #define DRAW_BUF_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
 
 SPIClass touchscreenSPI = SPIClass(VSPI);
@@ -64,7 +73,6 @@ const int freq = 5000;
 const int ledChannel = 0;
 const int resolution = 8;
 int brightness = 255; // Initial brightness
-#define SCREEN_MINIMUM_BRIGHTNESS 30 // Edit this from 0 to 255 to set the minimum screen brightness (0 = off)
 
 uint32_t draw_buf[DRAW_BUF_SIZE / 4];
 int x, y, z;
@@ -91,6 +99,9 @@ lv_opa_t fact_opacity = 0; // 0 to 255, 0 is completely transparent
 
 int factIndex = 0;
 int last_fact_index = 0;
+
+lv_obj_t * track_dots[MAX_TRACK_DOTS];
+int track_dot_counter = 0;
 
 // Array of ISS Facts to display when the ISS icon is clicked on the screen.
 // Edit these to display your own facts or anything else.
@@ -125,32 +136,32 @@ const char* iss_facts[] = {
 // Mercator projection is a cylindrical projection used for 
 // the 2D map, which means the area around the poles are very distorted,
 // while areas near the equator are more accurate. Furthermore, 
-// the map has been skewed to fit within a 320x240 screen, and
+// the map has been skewed to fit within a 320x240 screen, and this
 // has been taken into account in the calculations below. 
 
 float degrees_to_radians(float degrees) {
-    return degrees * PI / 180;
+  return degrees * PI / 180;
 }
 
 float calculate_mercator_x(float longitude_degrees, float map_width) {
-    return (longitude_degrees + 180) * (map_width / 360);
+  return (longitude_degrees + 180) * (map_width / 360);
 }
 
 float calculate_mercator_y(float latitude_degrees, float map_height, float map_width) {
-    float lat_rad = degrees_to_radians(latitude_degrees);
+  float lat_rad = degrees_to_radians(latitude_degrees);
 
-    // Mercator N value
-    float merc_n = log(tan((PI / 4) + (lat_rad / 2)));
+  // Mercator N value
+  float merc_n = log(tan((PI / 4) + (lat_rad / 2)));
 
-    // Adjust for map height and aspect ratio
-    float y = (map_height / 2) - (map_width * merc_n / (2 * PI));
-    return y;
+  // Adjust for map height and aspect ratio
+  float y = (map_height / 2) - (map_width * merc_n / (2 * PI));
+  return y;
 }
 
 void lat_lon_to_pixel() {
-    x_pixel = static_cast<int>(calculate_mercator_x(longitude, map_width));
-    y_pixel = static_cast<int>(calculate_mercator_y(latitude, map_height, map_width));
-    return;
+  x_pixel = static_cast<int>(calculate_mercator_x(longitude, map_width));
+  y_pixel = static_cast<int>(calculate_mercator_y(latitude, map_height, map_width));
+  return;
 }
 //////////////////////////////////////////////
 
@@ -170,11 +181,26 @@ void draw_map(void) {
   lv_obj_align(img0, LV_ALIGN_CENTER, 0, 0);
 }
 
-// This updates the ISS icon location based on the current Lat/Lon 
-// obtained from the API.
+void init_track_dots() {
+  // Initialize the array in a loop
+  for (int i = 0; i < MAX_TRACK_DOTS; ++i) {
+
+    track_dots[i] = lv_obj_create(lv_scr_act());
+    lv_obj_add_flag(track_dots[i], LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_size(track_dots[i], 4, 4);
+
+    lv_obj_set_style_radius(track_dots[i], LV_RADIUS_CIRCLE, 4);
+    lv_obj_set_style_bg_color(track_dots[i], lv_color_hex(0xFF0000), 0); // Red background
+    lv_obj_set_style_border_width(track_dots[i], 4, 0);
+    lv_obj_set_style_border_color(track_dots[i], lv_color_hex(0xFF0000), 0); // Red border
+
+  }
+}
+
+// This updates the ISS icon location based on the current Lat/Lon obtained from the API.
 void update_iss_position() {       
-    lat_lon_to_pixel();
-    lv_obj_set_pos(img1, x_pixel - 30, y_pixel - 24); // -30 is to center the image, will need to update with new image
+  lat_lon_to_pixel();
+  lv_obj_set_pos(img1, x_pixel - 30, y_pixel - 24); // -30 and -24 makes icon appear centered
 }
 
 
@@ -185,44 +211,44 @@ void update_iss_position() {
 // human readable date-time format.
 void printLatLongToDisplay() {
 
-    lv_label_set_text_fmt(lat_label, "Lat: %f", latitude);
-    lv_label_set_text_fmt(lon_label, "Lon: %f", longitude);
+  lv_label_set_text_fmt(lat_label, "Lat: %f", latitude);
+  lv_label_set_text_fmt(lon_label, "Lon: %f", longitude);
 
-    DateTime dt(unix_time);             // TODO Update so we dont make a new datetime each loop
-    String formattedDateTime = "UTC: " + String(dt.year(), DEC) + "-" +
+  DateTime dt(unix_time);             // TODO Update so we dont make a new datetime each loop
+  String formattedDateTime = "UTC: " + String(dt.year(), DEC) + "-" +
                              String(dt.month(), DEC) + "-" +
                              String(dt.day(), DEC) + " " +
                              String(dt.hour(), DEC) + ":" +
                              String(dt.minute(), DEC) + ":" +
                              String(dt.second(), DEC);
 
-    char charDateTime[40];
+  char charDateTime[40];
 
-    formattedDateTime.toCharArray(charDateTime, 40);
-    lv_label_set_text(time_label, charDateTime);
+  formattedDateTime.toCharArray(charDateTime, 40);
+  lv_label_set_text(time_label, charDateTime);
 }
 
-// Add track point to the screen
+// Add track dot to the screen
 void add_track_point() {
 
-    // TODO Automatically flush track points after a certain threshold.
+  // Every 15 position updates, update the track dots on the screen
+  if (track_counter > 14) {
 
-    if (track_counter > 14) {
+    // Set the position of the dot and make it visible
+    lv_obj_set_pos(track_dots[track_dot_counter], x_pixel, y_pixel);
+    lv_obj_clear_flag(track_dots[track_dot_counter], LV_OBJ_FLAG_HIDDEN);
 
-        lv_obj_t * circle_obj = lv_obj_create(lv_scr_act());
-        lv_obj_set_size(circle_obj, 4, 4);
-        lv_obj_set_pos(circle_obj, x_pixel, y_pixel);
-        lv_obj_set_style_radius(circle_obj, LV_RADIUS_CIRCLE, 4);
-        lv_obj_set_style_bg_color(circle_obj, lv_color_hex(0xFF0000), 0); // Red background
-        lv_obj_set_style_border_width(circle_obj, 4, 0);
-        lv_obj_set_style_border_color(circle_obj, lv_color_hex(0xFF0000), 0); // Red border
-        track_counter = 0;
+    // Reset the counter
+    track_counter = 0;
 
-        // Move the ISS icon on top of the new track dots
-        lv_obj_move_foreground(img1);
+    // Keep track of the available dots, reusing dots when the maxiumum is reached
+    track_dot_counter += 1;
+    if (track_dot_counter > MAX_TRACK_DOTS - 1) {
+      track_dot_counter = 0;
     }
+  }
 
-    track_counter += 1;
+  track_counter += 1;
 }
 
 // Get the ISS location data from the API over WiFi,
@@ -232,7 +258,8 @@ void get_iss_current_position() {
 
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
-    http.begin("http://api.open-notify.org/iss-now.json"); // Open Notify API endpoint
+    //http.begin("http://api.open-notify.org/iss-now.json"); // Open Notify API endpoint
+    http.begin("https://api.wheretheiss.at/v1/satellites/25544"); // Where the ISS at API endpoint
 
     int httpResponseCode = http.GET();
 
@@ -243,9 +270,15 @@ void get_iss_current_position() {
       DynamicJsonDocument doc(2048); // Adjust size as needed
       deserializeJson(doc, payload);
 
-      latitude = doc["iss_position"]["latitude"];
-      longitude = doc["iss_position"]["longitude"];
+      // WheretheISS format
+      latitude = doc["latitude"];
+      longitude = doc["longitude"];
       unix_time = doc["timestamp"];
+
+      // Open notify json format
+      //latitude = doc["iss_position"]["latitude"];
+      //longitude = doc["iss_position"]["longitude"];
+      //unix_time = doc["timestamp"];
 
       Serial.print("Latitude: ");
       Serial.println(latitude);
@@ -321,8 +354,10 @@ void touchscreen_read(lv_indev_t *indev, lv_indev_data_t *data) {
     data->point.x = x;
     data->point.y = y;
 
-    brightness = 255; // reset screen brightness to max when screen is clicked
+    // Reset screen brightness to max when screen is clicked
+    brightness = 255;
     ledcWrite(LCD_BACKLIGHT_PIN, brightness);
+
   } else {
     data->state = LV_INDEV_STATE_RELEASED;
   }
@@ -357,15 +392,18 @@ void setup() {
 
   TFT_eSPI tft = TFT_eSPI();
   tft.init();
-  //pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
+
+  // NOTE: TFT Library was updated to replace ledcSetup() and ledcAttachPin() with ledcAttach(), and ledChannel input is not needed.
   ledcAttach(LCD_BACKLIGHT_PIN, freq, resolution);
   //ledcSetup(ledChannel, freq, resolution);
   //ledcAttachPin(LCD_BACKLIGHT_PIN, ledChannel);
+
   ledcWrite(LCD_BACKLIGHT_PIN, brightness); // Set initial brightness
   delay(10);
 
   // Start LVGL
   lv_init();
+
   // Register print function for debugging
   lv_log_register_print_cb(log_print);
 
@@ -394,6 +432,9 @@ void setup() {
     
   // Draw background worldmap
   draw_map();
+
+  // Prepare track dots
+  init_track_dots();
 
   // Set the ISS icon
   img1 = lv_image_create(lv_screen_active());
@@ -450,8 +491,8 @@ void loop() {
   //  15 seconds, or until the ISS icon is clicked again.
   if (millis() - last_fact >= FACT_FADE_UPDATE_TIME) {
     if (fact_opacity > 0) {
-        fact_opacity -= 1;
-        lv_obj_set_style_opa(fact_label, fact_opacity, 0);
+      fact_opacity -= 1;
+      lv_obj_set_style_opa(fact_label, fact_opacity, 0);
     }
     last_fact = millis();
   }
@@ -468,7 +509,6 @@ void loop() {
     last_brightness = millis();
   }
   
-
   lv_tick_inc(5);
   delay(5);
 
