@@ -140,7 +140,7 @@
 // sketch. e.g. with digitalWrite(TFT_BL, LOW);
 
 #define TFT_BL   21            // LED back-light control pin
-#define TFT_BACKLIGHT_ON HIGH  // Level to turn ON back-light (HIGH or LOW)
+//#define TFT_BACKLIGHT_ON HIGH  // Level to turn ON back-light (HIGH or LOW) // Commented out because brightness is handled by PWM in sketch
 
 
 

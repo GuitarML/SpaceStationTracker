@@ -36,6 +36,7 @@ https://github.com/Surrey-Homeware/Aura (Weather App used for example esp32 Wifi
 #include <math.h>
 #include <ArduinoJson.h>
 #include <RTClib.h>
+#include <esp32-hal-ledc.h>
 
 // Define touchscreen pins, specific to this particular CYD hardware.
 #define XPT2046_IRQ 36   // T_IRQ
@@ -52,10 +53,18 @@ https://github.com/Surrey-Homeware/Aura (Weather App used for example esp32 Wifi
 #define DEFAULT_CAPTIVE_SSID "SpaceStationTracker"
 #define POSITION_UPDATE_TIME 5000UL  // 5 seconds
 #define FACT_FADE_UPDATE_TIME 58UL   // Every 58ms fade fact text by 1 from 255 to 0, about 15 seconds
+#define BRIGHTNESS_UPDATE_TIME 10000UL // Decrease brightness a little every 10 seconds
 #define DRAW_BUF_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT / 10 * (LV_COLOR_DEPTH / 8))
 
 SPIClass touchscreenSPI = SPIClass(VSPI);
 XPT2046_Touchscreen touchscreen(XPT2046_CS, XPT2046_IRQ);
+
+// Screen brightness parameters
+const int freq = 5000;
+const int ledChannel = 0;
+const int resolution = 8;
+int brightness = 255; // Initial brightness
+#define SCREEN_MINIMUM_BRIGHTNESS 30 // Edit this from 0 to 255 to set the minimum screen brightness (0 = off)
 
 uint32_t draw_buf[DRAW_BUF_SIZE / 4];
 int x, y, z;
@@ -159,7 +168,6 @@ void draw_map(void) {
   lv_obj_t * img0 = lv_image_create(lv_screen_active());
   lv_image_set_src(img0, &bluemarble_320x240);
   lv_obj_align(img0, LV_ALIGN_CENTER, 0, 0);
-
 }
 
 // This updates the ISS icon location based on the current Lat/Lon 
@@ -312,10 +320,15 @@ void touchscreen_read(lv_indev_t *indev, lv_indev_data_t *data) {
     data->state = LV_INDEV_STATE_PRESSED;
     data->point.x = x;
     data->point.y = y;
+
+    brightness = 255; // reset screen brightness to max when screen is clicked
+    ledcWrite(LCD_BACKLIGHT_PIN, brightness);
   } else {
     data->state = LV_INDEV_STATE_RELEASED;
   }
+
 }
+
 
 // Callback for when the ISS icon is clicked.
 void iss_icon_clicked_cb(lv_event_t * event)
@@ -344,8 +357,13 @@ void setup() {
 
   TFT_eSPI tft = TFT_eSPI();
   tft.init();
-  pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
-  
+  //pinMode(LCD_BACKLIGHT_PIN, OUTPUT);
+  ledcAttach(LCD_BACKLIGHT_PIN, freq, resolution);
+  //ledcSetup(ledChannel, freq, resolution);
+  //ledcAttachPin(LCD_BACKLIGHT_PIN, ledChannel);
+  ledcWrite(LCD_BACKLIGHT_PIN, brightness); // Set initial brightness
+  delay(10);
+
   // Start LVGL
   lv_init();
   // Register print function for debugging
@@ -418,6 +436,7 @@ void loop() {
   lv_timer_handler();
   static uint32_t last = millis();
   static uint32_t last_fact = millis();
+  static uint32_t last_brightness = millis();
 
   if (millis() - last >= POSITION_UPDATE_TIME) {
     get_iss_current_position();
@@ -436,6 +455,19 @@ void loop() {
     }
     last_fact = millis();
   }
+  
+  // Decrease brightness gradually over time
+  if (millis() - last_brightness >= BRIGHTNESS_UPDATE_TIME) {
+    brightness -= 10;
+    if (brightness < SCREEN_MINIMUM_BRIGHTNESS) { 
+     brightness = SCREEN_MINIMUM_BRIGHTNESS;
+    }
+    ledcWrite(LCD_BACKLIGHT_PIN, brightness);
+    Serial.print("Brightness: ");
+    Serial.println(brightness);
+    last_brightness = millis();
+  }
+  
 
   lv_tick_inc(5);
   delay(5);

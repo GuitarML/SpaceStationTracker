@@ -6,12 +6,13 @@ which costs $20 or less. The code was written using Arduino IDE / ESP32 developm
 
 ![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/space_cyd.jpg)
 
-As of the time of writing, the end of life for the ISS is slated for 2030.
-This code could be repurposed for other orbiting space objects.
-
 I used this project to learn programming for ESP32/Arduino/CYD.
 It includes topics such as graphics using LVGL, wifi connection, getting
 information from a restful API, parsing json data, and touchscreen interaction.
+This would make a great space related STEM classroom project.
+
+As of the time of writing, the end of life for the ISS is slated for 2030.
+This code could be repurposed for other orbiting space objects.
 
 ### Using the SpaceStationTracker
 
