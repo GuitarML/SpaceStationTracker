@@ -7,4 +7,4 @@ ISS icon, and a double wide world map with the polar regions removed.
 There is also a Google Colab script that I used to generate the 
 worldmap images using the python Basemap module. 
 
-These files are not used when compiling the ISS_Tracker app.
+These files are not used when compiling the SpaceStationTracker app.

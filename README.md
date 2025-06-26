@@ -4,6 +4,8 @@ SpaceStationTracker is an application that displays the current position of the 
 It runs on a ESP32-2432S028R ILI9341 device with a 2.8" screen, commonly known as the CYD "Cheap Yellow Display", 
 which costs $20 or less. The code was written using Arduino IDE / ESP32 development environment in c++.
 
+![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/space_cyd.jpg)
+
 As of the time of writing, the end of life for the ISS is slated for 2030.
 This code could be repurposed for other orbiting space objects.
 
@@ -50,10 +52,10 @@ Be aware of the differences in the printable models if you want to use the micro
     a. for "esp32" board with a device type of "ESP32 Dev Module" and
     b. set "Tools -> Partition Scheme" to "Huge App (3MB No OTA/1MB SPIFFS)"
 2. Install the libraries below in Arduino IDE
-3. You can copy the entire ISS_Tracker repository into ~/Documents/Arduino/
+3. You can copy the entire SpaceStationTracker repository into ~/Documents/Arduino/
     a. User_Setup.h file for TFT_eSPI needs to be placed (overwrite to) the TFT_eSPI folder in ~/Documents/Arduino/libraries
     b. lv_conf.h file for LVGL needs to be placed in ~/Documents/Arduino/libraries/lvgl/src
-4. Plug in your CYD over USB and compile and upload the ISS_Tracker code. To reset the CYD to get ready for install, you may need to
+4. Plug in your CYD over USB and compile and upload the SpaceStationTracker code. To reset the CYD to get ready for install, you may need to
     hold the boot button, then press and relese the reset button, and then release the boot button. These are the small white buttons
 	located on the back of the CYD board. They are labeled "RST" and BOOT".
 
@@ -69,7 +71,7 @@ Be aware of the differences in the printable models if you want to use the micro
 
 ### License
 
-The iss_tracker.ino code is under the terms of the GPL 3.0 license.
+The SpaceStationTracker.ino code is under the terms of the GPL 3.0 license.
 
 
 ### Acknowledgements

@@ -86,25 +86,25 @@ int last_fact_index = 0;
 // Array of ISS Facts to display when the ISS icon is clicked on the screen.
 // Edit these to display your own facts or anything else.
 const char* iss_facts[] = {
-  "The ISS orbits Earth about every\n 90 minutes.",
-  "The average altitude of the ISS\n is 250 miles.",
+  "The ISS orbits Earth about every\n90 minutes.",
+  "The average altitude of the ISS\nis 250 miles.",
   "The speed of the ISS is 17,000 mph!",
-  "The ISS orbits Earth over 15 times per day.",
+  "The ISS orbits Earth over 15\ntimes per day.",
   "The ISS has two bathrooms.",
   "The ISS has six sleeping areas.",
-  "Astronauts conduct science experiments\n while aboard the ISS.",
+  "Astronauts conduct science experiments\nwhile aboard the ISS.",
   "The ISS is 356 feet long.",
-  "The ISS has a 55 foot long robotic\n arm built by Canada.",
+  "The ISS has a 55 foot long robotic\narm built by Canada.",
   "The ISS weighs 925,335 pounds.",
-  "The ISS is a joint project involving\n countries all over the world.",
-  "The ISS has been continuously occupied\n by astronauts since November 2000.",
-  "The first piece of the ISS was\n launched in November 1998.",
-  "Building ISS required more than\n 40 assembly launches.",
-  "The ISS was assembled with help from NASA's Space Shuttle.",
-  "The ISS astronauts exercise every\n day to keep healthy.",
-  "Eight spaceships can be connected to the space station at once.",
-  "The ISS includes contributions\n from 15 different nations.",
-  "Astronauts on the ISS see 16\n sunrises and sunsets per day.",
+  "The ISS is a joint project involving\ncountries all over the world.",
+  "The ISS has been continuously occupied\nby astronauts since November 2000.",
+  "The first piece of the ISS was\nlaunched in November 1998.",
+  "Building ISS required more than\n40 assembly launches.",
+  "The ISS was assembled with help\nfrom NASA's Space Shuttle.",
+  "The ISS astronauts exercise every\nday to keep healthy.",
+  "Eight spaceships can be connected\nto the space station at once.",
+  "The ISS includes contributions\nfrom 15 different nations.",
+  "Astronauts on the ISS see 16\nsunrises and sunsets per day.",
 
 };
 
@@ -199,16 +199,19 @@ void add_track_point() {
 
     // TODO Automatically flush track points after a certain threshold.
 
-    if (track_counter > 4) {
+    if (track_counter > 14) {
 
         lv_obj_t * circle_obj = lv_obj_create(lv_scr_act());
-        lv_obj_set_size(circle_obj, 2, 2);
+        lv_obj_set_size(circle_obj, 4, 4);
         lv_obj_set_pos(circle_obj, x_pixel, y_pixel);
-        lv_obj_set_style_radius(circle_obj, LV_RADIUS_CIRCLE, 0);
+        lv_obj_set_style_radius(circle_obj, LV_RADIUS_CIRCLE, 4);
         lv_obj_set_style_bg_color(circle_obj, lv_color_hex(0xFF0000), 0); // Red background
         lv_obj_set_style_border_width(circle_obj, 4, 0);
         lv_obj_set_style_border_color(circle_obj, lv_color_hex(0xFF0000), 0); // Red border
         track_counter = 0;
+
+        // Move the ISS icon on top of the new track dots
+        lv_obj_move_foreground(img1);
     }
 
     track_counter += 1;
@@ -404,7 +407,7 @@ void setup() {
 
   // Get the initial ISS position and start tracking
   get_iss_current_position();
-  //add_track_point();
+  add_track_point();
 
 }
 
