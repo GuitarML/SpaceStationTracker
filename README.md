@@ -64,13 +64,13 @@ Be aware of the differences in the printable models if you want to use the micro
 
 ### How to compile:
 
-1. Configure Arduino IDE 
-    a. For "esp32" board with a device type of "ESP32 Dev Module"
-    b. Set "Tools -> Partition Scheme" to "Huge App (3MB No OTA/1MB SPIFFS)"
+1. Configure Arduino IDE <br>
+    a. For "esp32" board with a device type of "ESP32 Dev Module"<br>
+    b. Set "Tools -> Partition Scheme" to "Huge App (3MB No OTA/1MB SPIFFS)"<br>
 2. Install the libraries below in Arduino IDE
-3. You can copy the entire SpaceStationTracker repository into ~/Documents/Arduino/
-    a. User_Setup.h file for TFT_eSPI needs to be placed (overwrite to) the TFT_eSPI folder in ~/Documents/Arduino/libraries
-    b. lv_conf.h file for LVGL needs to be placed in ~/Documents/Arduino/libraries/lvgl/src
+3. You can copy the entire SpaceStationTracker repository into ~/Documents/Arduino/<br>
+    a. User_Setup.h file for TFT_eSPI needs to be placed (overwrite to) the TFT_eSPI folder in ~/Documents/Arduino/libraries<br>
+    b. lv_conf.h file for LVGL needs to be placed in ~/Documents/Arduino/libraries/lvgl/src<br>
 4. Plug in your CYD over USB to your computer, connect in the Arduino IDE, and compile and upload the SpaceStationTracker code using the Arduino IDE. 
    To reset the CYD to get ready for install, you may need to hold the BOOT button, then press and release the RESET button, 
    and then release the BOOT button. These are the small white buttons located on the back of the CYD board. They are labeled "RST" and BOOT".
