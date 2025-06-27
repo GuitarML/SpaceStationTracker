@@ -27,14 +27,14 @@ Once the app is connected to Wifi, it will continue to display and track the
 International Space Station. The esp32 will remember the last Wifi connection
 when cycling power, and if it changes you will be prompted to re connect using the above method.
 
-![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/splashscreen.jpg)
+![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/splashscreen.jpg)<br>
 The splashscreen will display on the CYD until it can connect to WiFi.
 
-![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/wifi1.jpg)
+![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/wifi1.jpg)<br>
 On a phone or computer, connect to the temporary WiFi access point called "SpaceStationTracker".
 It should show the screen above. Click "Configure WiFi".
  
-![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/wifi2.jpg)
+![app](https://github.com/GuitarML/SpaceStationTracker/blob/main/resources/wifi2.jpg)<br>
 Enter the WiFi network you wish to connect to (or select from the list) and enter your password. 
 This is used for the ESP32 board to connect to your local WiFi. After a successful connection,
 the SpaceStationTracker app will load and begin tracking the International Space Station.
