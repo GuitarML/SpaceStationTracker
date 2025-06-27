@@ -45,8 +45,8 @@ https://github.com/Surrey-Homeware/Aura (Weather App used for example esp32 Wifi
 #define POSITION_UPDATE_TIME 5000UL    // Every 5 seconds attempt to update the ISS position from the API
 #define FACT_FADE_UPDATE_TIME 58UL     // Every 58ms fade fact text by 1 from 255 to 0, about 15 seconds
 #define BRIGHTNESS_UPDATE_TIME 10000UL // Decrease screen brightness a little every 10 seconds
-#define MAX_TRACK_DOTS 200             // The maximum number of trailing track dots, set as desired.
-#define SCREEN_MINIMUM_BRIGHTNESS 30   // Edit this from 0 to 255 to set the minimum screen brightness (0 = off, 255=always on full)
+#define MAX_TRACK_DOTS 100             // The maximum number of trailing track dots, set as desired.
+#define SCREEN_MINIMUM_BRIGHTNESS 10   // Edit this from 0 to 255 to set the minimum screen brightness (0 = off, 255=always on full)
 /////////////////////////////////////////
 
 
