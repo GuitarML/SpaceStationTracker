@@ -455,7 +455,7 @@ void setup() {
   lv_label_set_text(lon_label, " ");
   lv_label_set_text(time_label, " ");
   lv_label_set_text(fact_label, " ");
-  lv_obj_set_style_text_color(lv_screen_active(), lv_color_hex(0xFF0000), LV_PART_MAIN); // green text
+  lv_obj_set_style_text_color(lv_screen_active(), lv_color_hex(0xFF0000), LV_PART_MAIN); // red text
   lv_obj_align(lat_label, LV_ALIGN_TOP_LEFT, 0, 0);
   lv_obj_align(lon_label, LV_ALIGN_TOP_LEFT, 0, 18);
   lv_obj_align(time_label, LV_ALIGN_TOP_RIGHT, 0, 0);
